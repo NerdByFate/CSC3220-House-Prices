@@ -10,3 +10,10 @@ library(ggplot2)
 # Load in data
 test = read_csv("test.csv")
 train = read_csv("train.csv")
+
+y = train$SalePrice
+
+#--------------------------------------------------
+#                       EDA
+#--------------------------------------------------
+summary(train)
