@@ -286,6 +286,8 @@ train$BsmtFinType1[train$BsmtFinSF1 == 0 & train$BsmtFinType1 != "None"] = "None
 train$BsmtFinType2[train$BsmtFinSF2 == 0 & train$BsmtFinType2 != "None"] = "None"
 train$BsmtFullBath[train$BsmtFullBath > 0 & train$BsmtQual == "NB"] = 0
 train$BsmtHalfBath[train$BsmtHalfBath > 0 & train$BsmtQual == "NB"] = 0
+train$GarageCars[train$GarageCars > 0 & train$GarageQual == "NG"] = 0
+train$GarageArea[train$GarageArea > 0 & train$GarageQual == "NG"] = 0
 train$PoolArea[train$PoolArea > 0 & train$PoolQC == "NP"] = 0
 train$PoolQC[train$PoolArea == 0 & train$PoolQC != "NP"] = "NP"
 
@@ -300,6 +302,8 @@ test$TotalBsmtSF[test$TotalBsmtSF > 0 & test$BsmtQual == "NB"] = 0
 test$BsmtUnfSF[test$BsmtUnfSF > 0 & test$BsmtQual == "NB"] = 0
 test$BsmtFullBath[test$BsmtFullBath > 0 & test$BsmtQual == "NB"] = 0
 test$BsmtHalfBath[test$BsmtHalfBath > 0 & test$BsmtQual == "NB"] = 0
+test$GarageCars[test$GarageCars > 0 & test$GarageQual == "NG"] = 0
+test$GarageArea[test$GarageArea > 0 & test$GarageQual == "NG"] = 0
 test$`2ndFlrSF`[test$`2ndFlrSF` > 0 & test$HouseStyle == "1Story"] = 0
 test$PoolArea[test$PoolArea > 0 & test$PoolQC == "NP"] = 0
 test$PoolQC[test$PoolArea == 0 & test$PoolQC != "NP"] = "NP"
