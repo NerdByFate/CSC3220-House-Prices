@@ -22,11 +22,8 @@ library(corrplot)
 library(RColorBrewer)
 
 # Load data
-#test = read_csv("test.csv")
-#train = read_csv("train.csv")
-
-test <- read_csv("C:\\Users\\amina\\Downloads\\New folder (5)\\test.csv")
-train = read_csv("C:\\Users\\amina\\Downloads\\New folder (5)\\train.csv")
+test = read_csv("test.csv")
+train = read_csv("train.csv")
 
 y = train$SalePrice
 
@@ -490,3 +487,5 @@ RFprediction = predict(RFmodel, test)
 #make a submission file
 RFprediction_dataFrame <- data.frame(Id = test$Id, SalePrice = RFprediction)
 RFprediction_dataFrame
+#show important variables
+varImp(RFmodel)
