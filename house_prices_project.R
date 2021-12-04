@@ -395,13 +395,13 @@ resamples = resamples(model_list)
 summary(resamples)
 # Box plot diagrams are generated 
 # For ease of comparison.
-bwplot(resamples, metric = "Rsquared", main = "Resample R Squared Comparison")        # Just to verify the results of our summary analysis
-bwplot(resamples, metric = "RMSE", main = "Resample RMSE Comparison")            # We see that the random forest better that lm
+bwplot(resamples, metric = "Rsquared", main = "Resample R Squared Comparison")  # Just to verify the results of our summary analysis
+bwplot(resamples, metric = "RMSE", main = "Resample RMSE Comparison")           # We see that the random forest better that lm
 # Predictions on the SalePrice variable for the test 
 # set using the random forest
 RFprediction = predict(RFmodel, test)
 # Make a submission file
 RFprediction_dataFrame <- data.frame(Id = test$Id, SalePrice = RFprediction)
-RFprediction_dataFrame
+write.csv(RFprediction_dataFrame, "submission.csv", row.names = FALSE)
 # Show important variables
 varImp(RFmodel)
