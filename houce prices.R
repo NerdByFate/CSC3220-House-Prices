@@ -13,6 +13,7 @@ install.packages("dplyr")
 install.packages("VIM")
 install.packages("corrplot")
 install.packages("RColorBrewer")
+install.packages("caret")
 
 # Load libraries
 library(readr)
@@ -20,12 +21,11 @@ library(dplyr)
 library(VIM)
 library(corrplot)
 library(RColorBrewer)
+library(caret)
 
 # Load data
 test = read_csv("test.csv")
 train = read_csv("train.csv")
-
-y = train$SalePrice
 
 # -------------------------------------------------
 #                   Data Cleaning
@@ -282,8 +282,8 @@ train$`2ndFlrSF`[train$`2ndFlrSF` > 0 & train$HouseStyle == "1Story"] = 0
 train$TotalBsmtSF[train$TotalBsmtSF > 0 & train$BsmtQual == "NB"] = 0
 train$BsmtUnfSF[train$BsmtUnfSF > 0 & train$BsmtQual == "NB"] = 0
 train$BsmtFinSF1[train$BsmtFinSF1 > 0 & train$BsmtFinType1 == "None"] = 0
-train$BsmtFinType1[train$BsmtFinSF1 == 0 & train$BsmtFinType1 != "None"] = "None"
-train$BsmtFinType2[train$BsmtFinSF2 == 0 & train$BsmtFinType2 != "None"] = "None"
+train$BsmtFinType1[train$BsmtFinSF1 == 0 & train$BsmtFinType1 != "None" & train$BsmtFinType1 != "Unf"] = "None"
+train$BsmtFinType2[train$BsmtFinSF2 == 0 & train$BsmtFinType2 != "None" & train$BsmtFinType2 != "Unf"] = "None"
 train$BsmtFullBath[train$BsmtFullBath > 0 & train$BsmtQual == "NB"] = 0
 train$BsmtHalfBath[train$BsmtHalfBath > 0 & train$BsmtQual == "NB"] = 0
 train$GarageCars[train$GarageCars > 0 & train$GarageQual == "NG"] = 0
@@ -295,9 +295,9 @@ train$PoolQC[train$PoolArea == 0 & train$PoolQC != "NP"] = "NP"
 test$MasVnrArea[test$MasVnrArea > 0 & test$MasVnrType == "None"] = 0
 test$MasVnrType[test$MasVnrArea == 0 & test$MasVnrType != "None"] = "None"
 test$BsmtFinSF1[test$BsmtFinSF1 > 0 & test$BsmtFinType1 == "None"] = 0
-test$BsmtFinType1[test$BsmtFinSF1 == 0 & test$BsmtFinType1 != "None"] = "None"
+test$BsmtFinType1[test$BsmtFinSF1 == 0 & test$BsmtFinType1 != "None" & test$BsmtFinType1 != "Unf"] = "None"
 test$BsmtFinSF2[test$BsmtFinSF2 > 0 & test$BsmtFinType2 == "None"] = 0
-test$BsmtFinType2[test$BsmtFinSF2 == 0 & test$BsmtFinType2 != "None"] = "None"
+test$BsmtFinType2[test$BsmtFinSF2 == 0 & test$BsmtFinType2 != "None" & test$BsmtFinType2 != "Unf"] = "None"
 test$TotalBsmtSF[test$TotalBsmtSF > 0 & test$BsmtQual == "NB"] = 0
 test$BsmtUnfSF[test$BsmtUnfSF > 0 & test$BsmtQual == "NB"] = 0
 test$BsmtFullBath[test$BsmtFullBath > 0 & test$BsmtQual == "NB"] = 0
@@ -312,51 +312,22 @@ test$PoolQC[test$PoolArea == 0 & test$PoolQC != "NP"] = "NP"
 #                     Modeling
 # -------------------------------------------------
 
-#-----------Model 1 random forest-----------
-
-
-#*****packages
-install.packages("ggplot2")
-install.packages("broom")
-install.packages("ggpubr")
-install.packages('mlbench')
-install.packages('corrplot')
-install.packages('Amelia')
-install.packages('caret')
-install.packages('plotly')
-install.packages('caTools')
-install.packages('reshape2')
-
-#*****load packages
-library(ggplot2)
-library(broom)
-library(ggpubr)
-library(corrplot)
-library(mlbench)
-library(Amelia)
-library(plotly)
-library(reshape2)
-library(caret)
-library(caTools)
-
-#Normality: To check whether the dependent variable follows a normal
-summary(train)
-summary(test)
+# Baseline: Linear regression
 
 summary(train$SalePrice)   # --Most of the density lies between 100k and 250k, but there appears to be a lot of outliers on the pricier side.
 hist(train$SalePrice)
-#Linearity
-plot(SalePrice ~ OverallQual, data = train)  #Let's look at "OverallQual" - overall material and finish quality. Of course, this one seems like a much more subjective feature, 
-                                             #so it might provide a bit different perspective on the sale price.
+# Linearity
+plot(SalePrice ~ OverallQual, data = train)   # Let's look at "OverallQual" - overall material and finish quality. Of course, this one seems like a much more subjective feature, 
+                                              # So it might provide a bit different perspective on the sale price.
 boxplot(train$SalePrice ~ train$OverallQual, main = "OverallQual Boxplot", ylab = 'SalePrice')
-#--Next, let's have a look at the greater living area 
-#--(square feet) against the sale price:
-plot(train$SalePrice ~ train$GrLivArea)  #You might've expected that larger living area should mean a higher price. 
-                                         #This chart shows you're generally correct.
-#Total square feet of the basement area
+# --Next, let's have a look at the greater living area 
+# --(square feet) against the sale price:
+plot(train$SalePrice ~ train$GrLivArea)       # You might've expected that larger living area should mean a higher price. 
+                                              # This chart shows you're generally correct.
+# Total square feet of the basement area
 plot(train$SalePrice ~ train$TotalBsmtSF)
 
-#Perform the linear regression analysis 
+# Perform the linear regression analysis 
 SalePrice_OverallQual_lm <- lm(SalePrice ~ OverallQual, data = train)
 SalePrice_OverallQual_lm
 summary(SalePrice_OverallQual_lm)
@@ -377,80 +348,22 @@ summary(SalePrice_TotalBsmtSF_lm)
 par(mfrow=c(2,2))
 plot(SalePrice_TotalBsmtSF_lm)
 par(mfrow=c(1,1))
-#Visualize the results with a graph
-train.graph<-ggplot(train, aes(x=SalePrice, y=TotalBsmtSF))+
-geom_point()
-train.graph
-#linear regression + plotted data
-train.graph <- train.graph + geom_smooth(method="lm", col="black")
-train.graph
-#Add the equation for the regression line
-train.graph <- train.graph +
-  stat_regline_equation(label.x = 3, label.y = 7)
-train.graph
-#graph 
-  #This produces the finished graph 
-  #that you can include in your papers:
-train.graph +
-  theme_bw() +
-  labs(title = "Reported TotalBsmtSF as a function of SalePrice",
-       x = "TotalBsmtSF (x$2,000)",
-       y = "SalePrice score (0 to 500,000)")
-#=================
-#     Multiple regression
-#++++++++++++++++++++++++++
-correl_OverallQual = cor(train$SalePrice, train$OverallQual)
 
-SalePrice_GrLivArea_lm<-lm(SalePrice ~ GrLivArea, data = train)
-SalePrice_GrLivArea_lm
-summary(SalePrice_GrLivArea_lm)
-par(mfrow=c(2,2))
-plot(SalePrice_GrLivArea_lm)
-par(mfrow=c(1,1))
+# Basic linear model plots:
+plot(train$SalePrice ~ train$OverallQual, main = "SalePrice as a Function of OverallQuall", xlab = "OverallQual", ylab = "SalePrice")
+abline(SalePrice_OverallQual_lm, col = "red")
 
-#Create a new dataframe 
-#with the information needed to plot the model
-plotting.train<-expand.grid(
-  SalePrice = seq(min(train$SalePrice), max(train$SalePrice), length.out=30),
-  GrLivArea=c(min(train$GrLivArea), mean(train$GrLivArea), max(train$GrLivArea)))
-plotting.data
+plot(train$SalePrice ~ train$GrLivArea, main = "SalePrice as a Function of GrLivArea", xlab = "GrLivArea", ylab = "SalePrice")
+abline(SalePrice_GrLivArea_lm, col = "red")
 
-#Predict the values of salePrice  *************
-#based on the linear mode
-plotting.train$predicted.y <- predict.lm(SalePrice_GrLivArea_lm, newdata=plotting.train)
-plotting.train$predicted.y
-plot(plotting.train$predicted.y)
+plot(train$SalePrice ~ train$TotalBsmtSF, main = "SalePrice as a Function of TotalBsmtSF", xlab = "TotalBsmtSF", ylab = "SalePrice")
+abline(SalePrice_TotalBsmtSF_lm, col = "red")
 
-#Round to two decimals
-plotting.train$SalePrice <- round(plotting.train$SalePrice, digits = 2)
-
-#Change into a factor
-plotting.train$SalePrice <- as.factor(plotting.train$SalePrice)
-plotting.train$SalePrice
-#Plot the original train <<<<<Error>>>
-train_plot <- ggplot(train, aes(x=SalePrice, y=GrLivArea)) +
-  geom_point()
-train_plot
-#Add the regression lines
-train_plot <- train_plot +
-  geom_line(data=plotting.train, aes(x=SalePrice, y=predicted.y, color=SalePrice), size=1.25)
-train_plot
-
-#Make the graph ready for publication
-train.plot <-
-  train_plot +
-  theme_bw() +
-  labs(title = "House Pricing % \n as a function of SalePrice and GrLivArea",
-       x = "SalePrice % ",
-       y = "GrLivArea %",
-       color = "SalePrice \n % ")
-
-heart.plot
-#--------------Prediction------------------
-#to predict a continuous numeric variable (SalePrice) regression-based algorithms are the most appropriate to try.
+# Candidate Models
+# To predict a continuous numeric variable (SalePrice) regression-based algorithms are the most appropriate to try.
 set.seed(42)
 
-#----------Model 1 - random forest
+# ---------Model 1 - Random forest (ranger)
 myControl = trainControl(method = "cv", number = 5, verboseIter = FALSE)
 RFmodel = train(SalePrice ~ ., 
                  data = train,
@@ -460,32 +373,35 @@ RFmodel = train(SalePrice ~ .,
                  trControl = myControl)
 RFmodel
 
-#----------Model 2 - linear regression (lm)
+# ---------Model 2 - Multiple linear regression (lm)
 LMmodel = train(SalePrice ~ ., 
                  data = train,
                  method = "lm",
                  trControl = myControl)
 LMmodel
-#----------model 3 - General Linear Models (Glm)
+
+# ---------Model 3 - General Linear Models (Glm)
 GLMmodel <- train(SalePrice ~.,
                data = train,
                method = "glm",
                trControl = myControl)
 GLMmodel
 
-#compared the performance of linear regression (lm) and random forest - using root 
-#mean square error (RMSE) as my performance measure.
-model_list <- list(lm = LMmodel, rf = RFmodel)
+# Compared the performance of linear regression (lm) and random forest - using root 
+# R squared and mean square error (RMSE) as a performance metric for validation.
+caretOverallQuallLM = train(SalePrice ~ OverallQual, data = train, method = "lm", trControl = myControl)
+model_list <- list(lm = caretOverallQuallLM, rf = RFmodel)  # Use caretOverallQualLM because LMmodel is actually multiple regression, not simple linear regression
 resamples = resamples(model_list)
 summary(resamples)
-#Box plot diagrams are generated 
-#for ease of comparison.
-bwplot(resamples, metric = "RMSE")  #We see that the random forest better that lm
-#predictions on the SalePrice variable for the test 
-#set using the random forest
+# Box plot diagrams are generated 
+# For ease of comparison.
+bwplot(resamples, metric = "Rsquared")        # Just to verify the results of our summary analysis
+bwplot(resamples, metric = "RMSE")            # We see that the random forest better that lm
+# Predictions on the SalePrice variable for the test 
+# set using the random forest
 RFprediction = predict(RFmodel, test)
-#make a submission file
+# Make a submission file
 RFprediction_dataFrame <- data.frame(Id = test$Id, SalePrice = RFprediction)
 RFprediction_dataFrame
-#show important variables
+# Show important variables
 varImp(RFmodel)
