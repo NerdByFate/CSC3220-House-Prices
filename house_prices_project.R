@@ -389,14 +389,14 @@ GLMmodel
 
 # Compared the performance of linear regression (lm) and random forest - using root 
 # R squared and mean square error (RMSE) as a performance metric for validation.
-caretOverallQuallLM = train(SalePrice ~ OverallQual, data = train, method = "lm", trControl = myControl)
-model_list <- list(lm = caretOverallQuallLM, rf = RFmodel)  # Use caretOverallQualLM because LMmodel is actually multiple regression, not simple linear regression
+caretOverallQuallLM = train(SalePrice ~ OverallQual, data = train, method = "lm", trControl = myControl)  # Use caretOverallQualLM because LMmodel is actually multiple regression, not simple linear regression
+model_list <- list(lm = caretOverallQuallLM, mlm = LMmodel, glm = GLMmodel, rf = RFmodel)
 resamples = resamples(model_list)
 summary(resamples)
 # Box plot diagrams are generated 
 # For ease of comparison.
-bwplot(resamples, metric = "Rsquared")        # Just to verify the results of our summary analysis
-bwplot(resamples, metric = "RMSE")            # We see that the random forest better that lm
+bwplot(resamples, metric = "Rsquared", main = "Resample R Squared Comparison")        # Just to verify the results of our summary analysis
+bwplot(resamples, metric = "RMSE", main = "Resample RMSE Comparison")            # We see that the random forest better that lm
 # Predictions on the SalePrice variable for the test 
 # set using the random forest
 RFprediction = predict(RFmodel, test)
